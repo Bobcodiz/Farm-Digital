@@ -50,4 +50,11 @@ public class FarmerAuthenticationControllerAdvice {
 
     }
 
+    @ExceptionHandler(NumberFormatException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String,String> numberFormatException(NumberFormatException nfe){
+        errorMessage.put("PhoneNoError",nfe.getMessage());
+        errorMessage.put("customError","Enter a valid phone number");
+        return errorMessage;
+    }
 }
