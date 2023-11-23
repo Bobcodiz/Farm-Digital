@@ -8,6 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,18 @@ public class JwtServices {
                 .setExpiration(new Date(System.currentTimeMillis() + 90000 * 60))
 
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
+
+    }
+
+//    ! generate a token without using user details service
+    public  String  generateAtokenWithoutUserdetails(Map<String ,Object> extraClaims,String  email){
+        return  Jwts.builder()
+                .setClaims(extraClaims)
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis()+9000 *60))
+                .signWith(getSignKey(),SignatureAlgorithm.HS256)
                 .compact();
 
     }
@@ -110,13 +123,14 @@ public class JwtServices {
 
 
     public boolean CheckTokenExpiryForAccountVerification(String token,String  email) throws InvalidAuthenticationException {
+        LOGGER.info(email);
 //            extract the email from the token
 //            ! validate if the email exist in our database
-        Optional<Farmer> userExist = farmerRepository.findByEmail(email);
+        var userExist = farmerRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("invalid login credentials"));
 //   check if the token is expired
         boolean tokenIsexpired = TokenIsExpired(token);
 //! if the token is valid and user exits
-        if (!tokenIsexpired && userExist.isPresent()) {
+        if (!tokenIsexpired) {
             return true;
         } else {
             throw new InvalidAuthenticationException("invalid login details please try again");
