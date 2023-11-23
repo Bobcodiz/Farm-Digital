@@ -3,6 +3,7 @@ package com.farmdigital.nerddevs.service;
 import com.farmdigital.nerddevs.Dto.AuthenticationDto;
 import com.farmdigital.nerddevs.Dto.FarmerRegistrationDto;
 import com.farmdigital.nerddevs.Exceptions.UserAlreadyExistException;
+import com.farmdigital.nerddevs.controller.EmailComposer;
 import com.farmdigital.nerddevs.model.Farmer;
 import com.farmdigital.nerddevs.model.Roles;
 import com.farmdigital.nerddevs.repository.FarmerRepository;
@@ -30,12 +31,10 @@ public class UserRegistrationService {
     private final JwtServices jwtServices;
     private final RolesRepository rolesRepository;
     private final Map<String, String> response = new HashMap<>();
-
+    private  final EmailComposer emailComposer;
     public Map<String, String> saveUer(FarmerRegistrationDto user) throws Exception {
 
         Roles role = rolesRepository.findByName("USER");
-
-
 //        ! if the farmer already exist throw an exception
         if (farmerRepository.findByEmail(user.getEmail()).isPresent()) {
 
@@ -52,7 +51,10 @@ public class UserRegistrationService {
                 .registrationTime(timeCreatedAccout())
                 .build();
         farmerRepository.save(newUser);
-        response.put("message", "user created successfully");
+//        ! validate emails for the users;
+        emailComposer.sendVerificationEmail(newUser.getEmail());
+        response.put("message", "user created successfully, please check your email to verify  your account !");
+
         return response;
 
     }
@@ -89,6 +91,13 @@ public class UserRegistrationService {
             user = farmerRepository.findByEmail(req.getEmail()).get();
         } else {
             throw new EntityNotFoundException("invalid login credentials");
+        }
+
+
+        if(!user.isVerified()){
+            //        ! validate emails for the users;
+            emailComposer.sendVerificationEmail(user.getEmail());
+            return "you have not verified your account , please check your email to verify your account!! ";
         }
 //       Generate token
         return jwtServices.generateAToken(user);

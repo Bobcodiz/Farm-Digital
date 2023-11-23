@@ -22,7 +22,7 @@ public class EmailComposer {
     private  final JwtServices jwtServices;
 //hello
 
-    public String  validateEmail(String  email){
+    public String  sendVerificationEmail(String  email){
         String  token=jwtServices.generateAtokenWithoutUserdetails(new HashMap<>(),email);
 
     String Subject = "Verify your Agri-connect account";
