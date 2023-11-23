@@ -77,32 +77,7 @@ public class UserRegistrationService {
 //    ! method to check the time when the user created an account
 
 
-    public String authenticateauser(AuthenticationDto req) {
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        req.getEmail(),
-                        req.getPassword()
-                )
-        );
-
-        Farmer user;
-        if (farmerRepository.findByEmail(req.getEmail()).isPresent()) {
-            user = farmerRepository.findByEmail(req.getEmail()).get();
-        } else {
-            throw new EntityNotFoundException("invalid login credentials");
-        }
-
-
-        if(!user.isVerified()){
-            //        ! validate emails for the users;
-            emailComposer.sendVerificationEmail(user.getEmail());
-            return "you have not verified your account , please check your email to verify your account!! ";
-        }
-//       Generate token
-        return jwtServices.generateAToken(user);
-
-    }
 //    todo test this email sending method
 
     public Map<String, String> changePassword(String email) throws EntityNotFoundException {
