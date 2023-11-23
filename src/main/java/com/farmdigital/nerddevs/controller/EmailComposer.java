@@ -20,7 +20,7 @@ import java.util.HashMap;
 public class EmailComposer {
     private final JavaMailSenderImpl mailSender;
     private  final JwtServices jwtServices;
-
+//hello
 
     public String  validateEmail(String  email){
         String  token=jwtServices.generateAtokenWithoutUserdetails(new HashMap<>(),email);
