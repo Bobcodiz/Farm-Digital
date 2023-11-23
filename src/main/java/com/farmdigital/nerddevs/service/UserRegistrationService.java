@@ -11,6 +11,8 @@ import com.farmdigital.nerddevs.repository.RolesRepository;
 import com.farmdigital.nerddevs.security.JwtServices;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,13 +34,18 @@ public class UserRegistrationService {
     private final RolesRepository rolesRepository;
     private final Map<String, String> response = new HashMap<>();
     private  final EmailComposer emailComposer;
+    private final static Logger LOGGER = LoggerFactory.getLogger(UserRegistrationService.class);
     public Map<String, String> saveUer(FarmerRegistrationDto user) throws Exception {
 
         Roles role = rolesRepository.findByName("USER");
+
+        //verify validity of the entered number.
+        verifyPhoneNumber(user.getPhoneNumber());
+
 //        ! if the farmer already exist throw an exception
         if (farmerRepository.findByEmail(user.getEmail()).isPresent()) {
 
-            throw new UserAlreadyExistException("user alredy exist !, please try to log in");
+            throw new UserAlreadyExistException("user already exist !, please try to log in");
         }
 //      !  create a new user
         Farmer newUser = Farmer.builder()
@@ -57,6 +64,11 @@ public class UserRegistrationService {
 
         return response;
 
+    }
+
+    public void verifyPhoneNumber(String phoneNumber) throws NumberFormatException
+    {
+            int number = Integer.parseInt(phoneNumber);
     }
 
 //    ! unique email constraint
