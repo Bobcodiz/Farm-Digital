@@ -23,7 +23,7 @@ public class FarmerAuthenticationController {
 
 //    ! add user route
     @PostMapping("/user/register")
-    public ResponseEntity<?> registerUse(@RequestBody @Valid FarmerRegistrationDto user) throws Exception{
+    public ResponseEntity<?> registerUser(@RequestBody @Valid FarmerRegistrationDto user) throws Exception{
         var  res= userRegistrationService.saveUer(user);
 //1233
     return  ResponseEntity.status(HttpStatus.CREATED).body(res);
@@ -33,9 +33,9 @@ public class FarmerAuthenticationController {
     public  ResponseEntity<?> authenticateUser(@RequestBody @Valid AuthenticationDto request){
 
 var token=userRegistrationService.authenticateauser(request);
-Map<String ,String > respose=new HashMap<>();
-respose.put("token",token);
-        return  ResponseEntity.status(HttpStatus.OK).body(respose);
+Map<String ,String > response=new HashMap<>();
+response.put("token",token);
+        return  ResponseEntity.status(HttpStatus.OK).body(response);
     }
 // ! forgot password route
     @PostMapping("/user/reset_password")
