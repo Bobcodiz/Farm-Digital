@@ -1,12 +1,17 @@
 package com.farmdigital.nerddevs.security;
 
+import com.farmdigital.nerddevs.Exceptions.InvalidAuthenticationException;
+import com.farmdigital.nerddevs.model.Farmer;
+import com.farmdigital.nerddevs.repository.FarmerRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -14,13 +19,15 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
 public class JwtServices {
 
-
+    private final static Logger LOGGER = LoggerFactory.getLogger(JwtServices.class);
+    private final FarmerRepository farmerRepository;
 //    ! create a token
 
     public String generateAToken(
@@ -36,6 +43,18 @@ public class JwtServices {
                 .setExpiration(new Date(System.currentTimeMillis() + 90000 * 60))
 
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
+
+    }
+
+//    ! generate a token without using user details service
+    public  String  generateAtokenWithoutUserdetails(Map<String ,Object> extraClaims,String  email){
+        return  Jwts.builder()
+                .setClaims(extraClaims)
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis()+9000 *60))
+                .signWith(getSignKey(),SignatureAlgorithm.HS256)
                 .compact();
 
     }
@@ -90,15 +109,35 @@ public class JwtServices {
 
     //    ! check if the token is expired
     private boolean TokenIsExpired(String token) {
+
         return extractTokenExpiration(token).before(new Date());
     }
 
 
     //    !extract the expiry date from the token
     private Date extractTokenExpiration(String token) {
-
         return extractSingleClaim(token, Claims::getExpiration);
     }
-//    ! check token expiry
+//    ! check token expiry for a verification email
+
+
+
+
+    public boolean CheckTokenExpiryForAccountVerification(String token,String  email) throws InvalidAuthenticationException {
+        LOGGER.info(email);
+//            extract the email from the token
+//            ! validate if the email exist in our database
+        var userExist = farmerRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("invalid login credentials"));
+//   check if the token is expired
+        boolean tokenIsexpired = TokenIsExpired(token);
+//! if the token is valid and user exits
+        if (!tokenIsexpired) {
+            return true;
+        } else {
+            throw new InvalidAuthenticationException("invalid login details please try again");
+        }
+
+
+    }
 
 }
