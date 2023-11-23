@@ -72,26 +72,18 @@ public class UserRegistrationService {
     }
 
 //    ! unique email constraint
-
-
     public String timeCreatedAccout() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyy 'at' hh:mm a");
         return formatter.format(LocalDateTime.now());
     }
-
     //    ! method that helps us create a unique id for the user
     public String createUniqueId(String  phoneNumber) {
-
         String uniqueId = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddss"));
         return "FARMER-" + phoneNumber.substring(7) + uniqueId;
     }
 
 //    ! method to check the time when the user created an account
-
-
-
-//    todo test this email sending method
-
+    
     public Map<String, String> changePassword(String email) throws EntityNotFoundException {
 
         Farmer farmer = farmerRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("invalid email adress"));
